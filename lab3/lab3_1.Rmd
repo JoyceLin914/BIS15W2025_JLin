@@ -34,13 +34,41 @@ spring <- c("Buckeye", "Buckeye", "Buckeye", "Benton", "Benton", "Benton", "Trav
 
 1. Build a data frame called `hsprings` with the above data. Name the temperature column `temp_C`. Print out the data frame.  
 
+```{r}
+temp_C <- c(temp)
+hsprings <- data.frame(temp_C, name, spring)
+hsprings
+```
+
+
 2. Change the column titled `name` to `scientist`, leave the other column names the same. Print out the data frame names.  
+```{r}
+hsprings <- tibble(temp, scientist=name, spring) #order of list = order of columns to appear first
+hsprings
+```
+
 
 3. Our scientists forgot to record the depth data for each spring. Here it is as a vector, add it as a new column called depth_ft: `c(4.15, 4.13, 4.12, 3.21, 3.23, 3.20, 5.67, 5.65, 5.66)`. Print out the data frame.
 
+```{r}
+hsprings$depth_ft <- c(4.15, 4.13, 4.12, 3.21, 3.23, 3.20, 5.67, 5.65, 5.66)
+hsprings
+```
+
+
 4. Calculate the mean temperature of all of the temperature measurements.
+```{r}
+temp <- hsprings[ ,2] # selecting the second column
+mean(hsprings$temp)
+hsprings
+```
+
 
 5. Save your hot springs data as a `.csv` file! Do not allow row names. 
+```{r}
+write.csv(hsprings, "hsprings.csv", row.names = FALSE) #prevents R from adding a new column with numbers
+```
+
 
 6. Go to the environment panel and push the broom to clear your environment.  
 
@@ -51,7 +79,7 @@ R allows us to import a wide variety of data types. The most common type of file
 
 An opinionated word about excel. It is fine to use excel for data entry and basic analysis. But, it often adds proprietary formatting that makes excel files difficult to work with in any program besides excel. R can read excel files, but I know of no R programmers that routinely use them. Instead they save copies of their excel files as .csv which strips away formatting but makes them easier to use in a variety of programs. We won't work with excel files in BIS 15L, but we will learn to import them.  
 
-The same goes for Google Sheets. Google Sheets is a great tool for collaboration and data entry. But, while Google states that you are the owner of the data you enter they store the files. Also, it is a little unclear what Google can do with your data so for sensitive projects it may be best to use a different tool.  
+The same goes for Google Sheets. Google Sheets is a great tool for collaboration and data entry. But, while Google states that you are the owner of the data you enter they store the files. Also, it is a little unclear what Google can do with your data so for sensitive projects it may be best to use a different tool.  excel and google sheet add more formatting to the data sheet
 
 To import any file, first make sure that you are in the correct working directory. If you are not in the correct directory, R will not "see" the file.
 ```{r}
@@ -68,7 +96,14 @@ hot_springs <- read_csv("hsprings_data.csv")
 
 Use the `str()` function to get an idea of the data structure of `hot_springs`.  
 ```{r}
-str(hot_springs)
+str(hot_springs) #structure
+```
+
+```{r}
+glimpse(hot_springs)
+```
+```{r}
+summary(hot_springs) #be careful with the math, is not always accurate
 ```
 
 What is the class of the scientist column? Change it to factor and then show the levels of that factor.  
@@ -77,7 +112,7 @@ class(hot_springs$scientist)
 ```
 
 ```{r}
-hot_springs$scientist <- as.factor(hot_springs$scientist)
+hot_springs$scientist <- as.factor(hot_springs$scientist) # factor = character that has limited observations to be repeated
 ```
 
 Change the class of the springs column to factor.
@@ -101,6 +136,11 @@ levels(hot_springs$spring)
 
 ## Practice
 1. As part of homework 2, you saved data on the five tallest mountains in the world. Reload that data below and use the `str()` function to explore it's structure.  
+
+```{r}
+mountains <- read_csv("mountains_data.csv")
+str(mountains)
+```
 
 ## That's it! Let's take a break and then move on to part 2! 
 

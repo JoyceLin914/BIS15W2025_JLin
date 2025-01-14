@@ -21,8 +21,13 @@ library("jpeg")
 ## Review from last time
 ### *With a partner, discuss the following questions*
 1. What is a path? How do we know that we have a correct path?  
+right bottom home-> desktop -> files = path
 2. What is a local path? What is a global path?  
+global path = anyone can access
+local path = your files only in your computer and not online
 3. How does a path relate to a working directory in R?  
+path: getwd()/local meaning on this computer
+working directory = 
 
 ## Shut Down Procedures
 1. Save your work.  
