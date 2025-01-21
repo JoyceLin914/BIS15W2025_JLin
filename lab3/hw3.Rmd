@@ -76,8 +76,11 @@ filter(homerange, class=="mammalia")
 
 **10. What is the largest `mean.hra.m2` for mammals? This is a very large number! Which animal has this homerange? Look them up online and see if you can figure out why this number is so large.**
 ```{r}
-
+max(homerange$mean.hra.m2)
+filter(homerange, mean.hra.m2== "3550830977")
 ```
+reindeer has the largest mean.hra.m2, which is the largest home range area, because they are the largest and most numerous herbivores in circumpolar areas.
+
 
 ## Knit and Upload
 Please knit your work as a .pdf or .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean!  
