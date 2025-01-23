@@ -1,13 +1,13 @@
 ---
 title: "Homework 5"
-author: "Type Your Name Here"
+author: "Joyce"
 date: "`r Sys.Date()`"
 output:
   html_document: 
     theme: spacelab
     keep_md: yes
 ---
-
+need to look at the readme file to answer the questions
 ## Instructions
 Answer the following questions and/or complete the exercises in RMarkdown. Please embed all of your code and push the final work to your repository. Your report should be organized, clean, and run free from errors. Remember, you must remove the `#` for any included code chunks to run.  
 

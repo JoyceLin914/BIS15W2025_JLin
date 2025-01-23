@@ -36,18 +36,28 @@ mammals <- read_csv("data/mammal_lifehistories_v2.csv")
 
 Let's rename some of the `mammals` variables.  
 ```{r}
-mammals <- rename(mammals, genus="Genus", wean_mass="wean mass", max_life= "max. life", litter_size="litter size", litters_per_year="litters/year")
+#mammals <- rename(mammals, genus="Genus", wean_mass="wean mass", max_life= "max. life", litter_size="litter size", litters_per_year="litters/year")
 ```
 
 Do you remember the easier way?
 ```{r}
-
+mammals <- clean_names(mammals)
 ```
+
+```{r}
+names(mammals)
+```
+
 
 ## Review
 In lab 4, we practiced extracting observations of interest. For example, we can pull out all of the fish from a specific lake.  
 ```{r}
 glimpse(fish)
+table(fish$lakeid)
+```
+
+```{r}
+filter(fish, lakeid=="MN")
 ```
 
 Let's convert `lakeid` to a factor and have a look at which states are represented in the data.  
@@ -56,23 +66,23 @@ fish$lakeid <- as.factor(fish$lakeid)
 ```
 
 ```{r}
-
+glimpse(fish)# important because change class of a variable
 ```
 
 Now we can pull out any state of interest.  
 ```{r}
-
+filter(fish, lakeid == "LSG")
 ```
 
 ## Using `filter()` on multiple conditions
 You can also use `filter()` to extract data based on multiple conditions. Below we extract only the fish that have lakeid "AL" and length >350.
 ```{r}
-
+filter(fish, lakeid =="AL" & length> 350)
 ```
 
 Notice that the `|` operator generates a different result. Why?
 ```{r}
-
+filter(fish, lakeid =="AL" | length> 350) # | equals to "or"
 ```
 
 Rules:  
@@ -83,27 +93,38 @@ Rules:
 
 In this case, we filter out the fish with a length over 400 and a scale length over 11 or a radii length over 8.
 ```{r}
-
+filter(fish, length > 400, (scalelength>11 | radii_length_mm > 8))
 ```
 
 ## Practice  
 1.  From the `mammals` data, filter all members of the family Bovidae with a mass greater than 450000.
 ```{r}
-
+filter(mammals, family == "Bovidae" & mass > 450000)
 ```
 
 2. From the `mammals` data, build a data frame that compares `mass`, `gestation`, and `newborn` among the primate genera `Lophocebus`, `Erythrocebus`, and `Macaca`. Among these genera, which species has the smallest `newborn` mass?
-```{r}
 
+select the data of interest -> filter the specific data from the data of interest
+```{r}
+mammals2 <- select(mammals, "order", "genus", "mass", "gestation", "newborn")
+mammals3 <- filter(mammals2, order == "Primates")
+mammals3
 ```
 
 ```{r}
-
+mammals4 <- filter(mammals3, genus %in% c("Lophocebus", "Erythrocebus", "Macaca"))
+table(mammals4$genus)
+```
+```{r}
+mammals4
 ```
 
 3. From the `mammals` data, filter all members of the family `Felidae` with a gestation period less than 3 months. As part of this, remove all variables except `genus`, `family`, and `gestation`. Lastly, remove all NA's in the variable `gestation`- in this data they are represented by -999.
 ```{r}
-
+mammals2 <- filter(mammals, family == "Felidae") # or can use & gestation <3 and delete mammals3
+mammals3 <- filter(mammals2, gestation < 3)
+mammals4 <- select(mammals3, "genus", "family", "gestation")
+filter(mammals4, gestation!=-999)
 ```
 
 ## That's it! Let's take a break and then move on to part 2!  
