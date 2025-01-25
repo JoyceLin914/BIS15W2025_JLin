@@ -24,29 +24,47 @@ Reference: Koerner SE, Poulsen JR, Blanchard EJ, Okouyi J, Clark CJ. Vertebrate 
 
 **1. Load `IvindoData_DryadVersion.csv` and store it as a new object called `gabon`.**
 ```{r}
-
+gabon <- read_csv("data/IvindoData_DryadVersion.csv")
 ```
 
 **2. Use one or more of the summary functions you have learned to get an idea of the structure of the data.**  
 ```{r}
+summary(gabon)
+```
 
+```{r}
+glimpse(gabon)
 ```
   
 **3. Use `mutate()` Change the variables `HuntCat`, `LandUse`, and `TransectID` to factors.**
 ```{r}
+gabon <- gabon %>% 
+  mutate(HuntCat = as.factor(HuntCat)) %>% 
+  mutate(LandUse = as.factor(LandUse)) %>% 
+  mutate(TransectID = as.factor(TransectID))
 
+is.factor(gabon$HuntCat)
+is.factor(gabon$LandUse)
+is.factor(gabon$TransectID)
 ```
+
+
 
 **4. Use `filter` to make three new dataframes focused only on 1. national parks, 2. logging concessions, and 3. neither. Have a look at the README in the data folder so you understand the variables.**
 ```{r}
-
+gabon_2 <- filter(gabon, LandUse == "Park")
+gabon_3 <- filter(gabon, LandUse == "Logging")
+gabon_4 <- filter(gabon, LandUse == "Neither")
 ```
 
 **5. How many transects are recorded for each land use type?**
 ```{r}
-
+gabon_2
+gabon_3
+gabon_4
 ```
 
+National parks has 7 transect ID, which 2 of the 7 are in the same park, Logging has 13 transect ID, and neither has 4 transect ID.
 **6. For which land use type (national parks, logging, or neither) is average all species diversity the greatest?**
 ```{r}
 
