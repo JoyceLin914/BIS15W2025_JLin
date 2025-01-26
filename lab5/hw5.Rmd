@@ -48,8 +48,6 @@ is.factor(gabon$LandUse)
 is.factor(gabon$TransectID)
 ```
 
-
-
 **4. Use `filter` to make three new dataframes focused only on 1. national parks, 2. logging concessions, and 3. neither. Have a look at the README in the data folder so you understand the variables.**
 ```{r}
 gabon_2 <- filter(gabon, LandUse == "Park")
@@ -59,44 +57,59 @@ gabon_4 <- filter(gabon, LandUse == "Neither")
 
 **5. How many transects are recorded for each land use type?**
 ```{r}
-gabon_2
-gabon_3
-gabon_4
+gabon_5 <- filter(gabon, LandUse %in% c("Park","Logging", "Neither"))
+table(gabon_5$LandUse)
 ```
 
-National parks has 7 transect ID, which 2 of the 7 are in the same park, Logging has 13 transect ID, and neither has 4 transect ID.
+National parks has 7 transect ID, Logging has 13 transect ID, and neither has 4 transect ID.
+
 **6. For which land use type (national parks, logging, or neither) is average all species diversity the greatest?**
 ```{r}
-
+mean(gabon_2$Diversity_AllSpecies)
 ```
 
 ```{r}
-
+mean(gabon_3$Diversity_AllSpecies)
 ```
 
 ```{r}
-
+mean(gabon_4$Diversity_AllSpecies)
 ```
+National Parks has the highest average all species diversity.
 
 **7. Use `filter` to find the transect that has the highest relative abundance of elephants. What land use type is this? Use `arrange()` to sort your results.** 
 ```{r}
-
+gabon %>% 
+  select(TransectID, RA_Elephant, LandUse) %>% 
+  arrange(-RA_Elephant)
 ```
+Transect 18 has the highest relative abundance of 2.30, and the type of land use is Logging.
 
 **8. Use `filter` to find all transects that have greater than 15 tree species or a breast height diameter between 50 and 60cm.  **
 ```{r}
-
+gabon %>% 
+  select(TransectID, Veg_Rich, Veg_DBH) %>% 
+  filter(Veg_Rich>15 | between(Veg_DBH, 50, 60)) 
 ```
 
 **9.Which transects and land use types have more than 10 tree species and 10 mammal species? Use `arrange()` to sort by the number of tree species.**
 ```{r}
-
+gabon %>% 
+  select(TransectID, LandUse, Veg_Rich, Rich_MammalSpecies) %>% 
+  filter(Veg_Rich > 10 & Rich_MammalSpecies > 10) %>% 
+  arrange(-Veg_Rich)
 ```
 
 **10. Explore the data! Develop one question on your own that includes at least two lines of code. **
+Which transects and land use types have the most number of households in the nearest village to each transect and have a high hunting intensity?
+Sort the data by the number of households.
 ```{r}
-
+gabon %>% 
+  select(TransectID, LandUse, NumHouseholds, HuntCat) %>% 
+  filter(HuntCat == "High") %>% 
+  arrange(-NumHouseholds)
 ```
+Transect ID 9 with a logging land use has the highest number of households, which is 73.
 
 ## Knit and Upload
 Please knit your work as a .pdf or .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean!  
