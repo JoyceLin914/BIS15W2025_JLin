@@ -115,9 +115,6 @@ mammals3
 mammals4 <- filter(mammals3, genus %in% c("Lophocebus", "Erythrocebus", "Macaca"))
 table(mammals4$genus)
 ```
-```{r}
-mammals4
-```
 
 3. From the `mammals` data, filter all members of the family `Felidae` with a gestation period less than 3 months. As part of this, remove all variables except `genus`, `family`, and `gestation`. Lastly, remove all NA's in the variable `gestation`- in this data they are represented by -999.
 ```{r}
