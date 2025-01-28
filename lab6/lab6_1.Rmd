@@ -28,13 +28,16 @@ S. K. Morgan Ernest. 2003. Life history characteristics of placental non-volant 
 ## Pipes `%>%` 
 Recall that we use pipes to connect the output of code to a subsequent function. This makes our code cleaner and more efficient. One way we can use pipes is to attach the `clean_names()` function from janitor to the `read_csv()` output.  
 ```{r}
-mammals <- read_csv("data/mammal_lifehistories_v2.csv") %>% clean_names()
+mammals <- read_csv("data/mammal_lifehistories_v2.csv") %>% clean_names() # always add this to make everything consistent
 ```
 
 ## `mutate()`  
 Recall that mutate allows us to create a new column from existing columns in a data frame. Use `mutate()` to make a new column that converts gestation to years. Which animal has the longest gestation period?
 ```{r}
-
+mammals %>% 
+  select(genus, species, gestation) %>% 
+  mutate(gestation_years=gestation/12) %>% #mutate = adding a new variable
+  arrange(-gestation_years)
 ```
 
 ## `mutate()` and across()
@@ -47,25 +50,36 @@ mammals
 
 ```{r}
 mammals %>% 
-  mutate(across(everything(), tolower))
+  mutate(across(everything(), tolower)) # mutate across all the variables and each of the obeservation into lowercase
 ```
 
 We can specify individual columns.
 ```{r}
 mammals %>% 
-  mutate(across(c("order", "family"), tolower))
+  mutate(across(c("order", "family"), tolower))# only change order and family to lowercase
 ```
 
+
+## Lambda function
 Or, leave some out. This is an example of a lambda function ` ~ ` that applies `tolower`() to each column. The `.` represents the current column being processed.
 ```{r}
 mammals %>%
-  mutate(across(-1, ~ tolower(.))) #apply tolower to all columns except the first
+  mutate(across(-1, ~ tolower(.))) #apply tolower to all columns (except vraiables in order) except the first 
+
+# across = go across the entire data frame
+#lambda or anoymous function
+# "." = "do this to every cell"
 ```
 
 ## `if_else()`
 We will briefly introduce `if_else()` here because it allows us to use `mutate()` but not have the entire column affected in the same way. In a sense, this can function like find and replace in a spreadsheet program. With `ifelse()`, you first specify a logical statement, afterwards what needs to happen if the statement returns `TRUE`, and lastly what needs to happen if it's  `FALSE`.  
 
 Have a look at the data from mammals below. Notice that the values for newborn include `-999.00`. This is sometimes used as a placeholder for NA (but, is a really bad idea). We can use `if_else()` to replace `-999.00` with `NA`.  
+
+```{r}
+summary(mammals)
+```
+
 ```{r}
 mammals %>% 
   select(genus, species, newborn) %>% 
@@ -75,29 +89,42 @@ mammals %>%
 ```{r}
 mammals %>% 
   select(genus, species, newborn) %>%
-  mutate(newborn_new = ifelse(newborn == -999.00, NA, newborn))%>% 
+  mutate(newborn_new = ifelse(newborn == -999.00, NA, newborn))%>% # give a new column name--> if newborn == -999, then put NA; if != -999, then keep the number as usual
   arrange(-newborn)
 ```
 
 ## Practice
 1. We are interested in the family, genus, species and max life variables. Because the max life span for several mammals is unknown, the authors have use -999 in place of NA. Replace all of these values with NA in a new column titled `max_life_new`. Then convert `max_life_new` into years. Finally, sort the date in descending order by max_life_new. Which mammal has the longest life span?
 ```{r}
-
+mammals %>% 
+  select(family, genus, species, max_life) %>% 
+  #pull out variables of interest
+  mutate(max_life_new = ifelse(max_life == -999.00, NA, max_life)) %>% 
+  # replaces the -999 with NA (only put -999 might work, but it's better to be specific)
+  mutate(max_life_new = max_life_new/12) %>% 
+  # converted to years
+  arrange(-max_life_new)
 ```
 
 2. Build a new data frame `msleep24` from the `msleep` data that: contains the `name` and `vore` variables along with a new column called `sleep_total_24` which is the amount of time a species sleeps expressed as a proportion of a 24-hour day. Restrict the `sleep_total_24` values to less than or equal to 0.3. Arrange the output in descending order.  
 ```{r}
+msleep24 <- msleep %>% 
+  mutate(sleep_total_24 = sleep_total/24) %>% 
+  select(name, vore, sleep_total_24, sleep_total) %>% 
+  filter(sleep_total_24 <= 0.3) %>% 
+  arrange(sleep_total_24)
 
+msleep24
 ```
 
 Did `dplyr` do what we expected? How do we check our output? Remember, just because your code runs it doesn't mean that it did what you intended.
 ```{r}
-#summary(msleep24)
+summary(msleep24) # make sure no -999 values
 ```
 
 Histograms are also a quick way to check the output.
 ```{r}
-#hist(msleep24$sleep_total)
+hist(msleep24$sleep_total)
 ```
 
 ## That's it! Let's take a break and then move on to part 2! 
