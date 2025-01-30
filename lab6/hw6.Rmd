@@ -47,7 +47,7 @@ superhero_info %>%
 ```{r}
 superhero_info %>% 
   filter(alignment=="bad") %>% 
-  count(name, sort=T)
+  select(name)
 ```
 
 3. How many distinct "races" are represented in `superhero_info`?
@@ -79,11 +79,17 @@ superhero_info %>%
 
 6. Who has the height advantage- bad guys or good guys? Convert their height to meters and sort from tallest to shortest.  
 ```{r}
-
+superhero_info %>% 
+  mutate(height=height/100) %>% 
+  filter(alignment == "good") %>% 
+  arrange(-height)
 ```
 
 ```{r}
-
+superhero_info %>% 
+  mutate(height=height/10) %>% 
+  filter(alignment=="bad") %>% 
+  arrange(-height)
 ```
 
 ## `superhero_powers`
@@ -91,31 +97,39 @@ Have a quick look at the `superhero_powers` data frame.
 
 7. How many superheros have a combination of agility, stealth, super_strength, and stamina?
 ```{r}
-
+clean_names(superhero_powers)
 ```
 
 ```{r}
-
+superhero_powers %>% 
+  filter(agility == "TRUE" & stealth== "TRUE" & super_strength=="TRUE" & stamina=="TRUE") %>% 
+  summarize(n_names=n_distinct(hero_names))
 ```
 
 8. Who is the most powerful superhero? Have a look at the code chunk below. Use the internet to annotate each line of code so you know how it works. It's OK to use AI to help you with this task.
 ```{r}
-superhero_powers %>%
+superhero_powers %>% # calls the superhero_powers df
   mutate(across(-1, ~ ifelse(. == TRUE, 1, 0))) %>% 
+  # across the entire data frame, apply the following condition to every cell in all columns except the first column: if the data in the cell is "TRUE", convert it into "1", if the data is not "TRUE", convert it into "0"
   mutate(total_powers = rowSums(across(-1))) %>% 
-  select(hero_names, total_powers) %>% 
+  # add the sum of numbers for each row (except the first column) and name the new column "total_powers"
+  select(hero_names, total_powers) %>%
+  # only show data of the 2 columns "hero_names" and "total_powers"
   arrange(-total_powers)
+  # sort the data in descending order by "total_powers"
 ```
 
 ## Your Favorite
 9. Pick your favorite superhero and let's see their powers!  
 ```{r}
-
+superhero_powers %>% 
+  filter(hero_names == "Winter Soldier")
 ```
 
 10. Can you find your hero in the superhero_info data? Show their info!  
 ```{r}
-
+superhero_info %>% 
+  filter(name == "Winter Soldier")
 ```
 
 ## Knit and Upload
