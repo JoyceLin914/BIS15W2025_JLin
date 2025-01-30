@@ -26,7 +26,7 @@ For this lab, we will use [palmerpenguins](https://allisonhorst.github.io/palmer
 
 To use these data, they need to be installed.
 ```{r}
-#install.packages("palmerpenguins")
+install.packages("palmerpenguins")
 ```
 
 Load the library.
@@ -52,13 +52,31 @@ penguins %>%
 
 What if we wanted to summarize basic statistics for each species? We could still use `filter()` but this is cumbersome. Show how you would do this below.
 ```{r}
-
+penguins %>% 
+  filter(species=="Adelie") %>% 
+  summarize(sd_body_mass=sd(body_mass_g, na.rm=T), mean_body_mass=mean(body_mass_g, na.rm=T),
+            n=n()) 
+```
+```{r}
+penguins %>% 
+  filter(species=="Chinstrap") %>% 
+  summarize(sd_body_mass=sd(body_mass_g, na.rm=T), mean_body_mass=mean(body_mass_g, na.rm=T),
+            n=n()) 
+```
+```{r}
+penguins %>% 
+  filter(species=="Gentoo") %>% 
+  summarize(sd_body_mass=sd(body_mass_g, na.rm=T), mean_body_mass=mean(body_mass_g, na.rm=T),
+            n=n()) 
 ```
 
 ## `group_by()`
 The `summarize()` function is most useful when used in conjunction with `group_by()`. This allows us to group data by a categorical variable(s) of interest.
 ```{r}
-
+penguins %>% 
+  group_by(species) %>% # grouping by a categorical variable, can't do it by a numerical variable
+  summarize(sd_body_mass=sd(body_mass_g, na.rm=T), mean_body_mass=mean(body_mass_g, na.rm=T),
+            n=n()) 
 ```
 
 ## Practice
@@ -66,21 +84,29 @@ Use the built-in `msleep` data to answer the following questions.
 
 1. Calculate the min, max, mean, and total number of observations for body weight by feeding ecology in the msleep data.
 ```{r}
-
+msleep %>% 
+  group_by(vore) %>% 
+  summarize(mean_bodywt=mean(bodywt, na.rm=T), min_bodywt=min(bodywt, na.rm=T), max_bodywt=max(bodywt, na.rm=T), total_bodywt=sum(bodywt, na.rm=T), n=n())
 ```
 
 2. Calculate mean brain weight by taxonomic order in the msleep data.
 ```{r}
-
+msleep %>% 
+  group_by(order) %>% 
+  summarize(mean_brainwt=mean(brainwt))
 ```
 
 3. Try running the code again, but this time add `na.rm=TRUE`. What is the problem with Cetacea?
 ```{r}
-
+msleep %>% 
+  group_by(order) %>% 
+  summarize(mean_brainwt=mean(brainwt, na.rm=TRUE))
 ```
 
 ```{r}
-
+msleep %>% 
+  filter(order=="Cetacea") %>% 
+  select(order, genus, brainwt)
 ```
 
 ## Review
@@ -88,26 +114,63 @@ The summarize() and group_by() functions are powerful tools that we can use to p
 
 What if we are interested in the number of observations (penguins) by species and island?
 ```{r}
+
+```
+
+```{r}
 penguins %>% 
   group_by(species, island) %>% 
   summarize(n=n(), .groups= 'keep') #.groups= 'keep' is used to keep the grouping variable in the output
 ```
 
 ## Practice
-1. How does the mean of `bill_length_mm` compare between penguin species?
+1. How does the mean of `bill_length_mm` compare by island and species?
 ```{r}
+x <- penguins %>% 
+  group_by(species, island) %>% 
+  summarize(mean_bill_length_mm=mean(bill_length_mm, na.rm = T), .groups = 'keep')
+```
 
+```{r}
+x %>% summarize(n=n()) # keep the groupings, keep island and species
+```
+
+
+```{r}
+y <- penguins %>% 
+  group_by(species, island) %>% 
+  summarize(mean_bill_length_mm=mean(bill_length_mm, na.rm = T), .groups = 'drop')
+```
+
+```{r}
+y %>% summarize(n=n()) # drop all the groups, no island and species
+```
+
+
+```{r}
+z <- penguins %>% 
+  group_by(species, island) %>% 
+  summarize(mean_bill_length_mm=mean(bill_length_mm, na.rm = T), .groups = 'drop_last') #default
+```
+
+
+```{r}
+z %>% summarize(n=n()) # drop species and keep island
 ```
 
 2. For some penguins, their sex is listed as NA. Where do these penguins occur?
 ```{r}
-
+penguins %>% 
+  count(species, island, sex) 
 ```
+
+
 
 ## `across()`
 What about using `filter()` and `select()` across multiple variables? There is a function in dplyr called `across()` which is designed to work across multiple variables. Have a look at Rebecca Barter's awesome blog [here](http://www.rebeccabarter.com/blog/2020-07-09-across/).    
 
 What if we wanted to apply `summarize()` in order to produce distinct counts over multiple variables; i.e. species, island, and sex? Although this isn't a lot of coding you can image that with a lot of variables it would be cumbersome.
+
 ```{r}
 penguins %>%
   summarize(distinct_species = n_distinct(species),
@@ -120,12 +183,23 @@ By using `across()` we can reduce the clutter and make things cleaner.
 penguins %>%
   summarize(across(c(species, island, sex), n_distinct))
 ```
+The new version
+```{r}
+penguins %>% 
+  summarize(across(c(species, island, sex), \(x) n_distinct(x, na.rm=T))) # The function takes x (each column that we specified) and applies n_distinct
+```
 
 This is very helpful for numeric variables.
 ```{r}
 penguins %>%
   summarize(across(where(is.numeric), mean, na.rm=T)) %>% 
   select(!year) #removes the year variable
+```
+
+
+```{r}
+penguins %>% 
+  summarize(across(where(is.numeric), \(x)mean(x, na.rm=T)))
 ```
 
 `group_by` also works.
@@ -140,12 +214,22 @@ penguins %>%
 
 Mean
 ```{r}
-
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(contains("mm"), \(x) mean(x, na.rm=T)))
 ```
 
 Standard Deviation
 ```{r}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(contains("mm"), \(x) sd(x, na.rm=T)))
+```
 
+```{r}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(contains("mm"), list(mean=\(x) mean(x, na.rm=T), sd=\(x) sd(x, na.rm=T))),n=n())
 ```
 
 ## Wrap-up  

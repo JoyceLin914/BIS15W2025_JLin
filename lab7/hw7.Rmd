@@ -30,31 +30,48 @@ fisheries <- read_csv("data/fisheries.csv")
 
 1. Explore the data. What are the names of the variables, what are the dimensions, are there any NA's, what are the classes of the variables, etc.? You may use the functions that you prefer.
 ```{r}
+summary(fisheries)
+```
+```{r}
+dim(fisheries)
+```
 
+```{r}
+glimpse(fisheries)
 ```
 
 2. How many countries are represented in the data? Provide a count and list their names.
 ```{r}
-
+fisheries %>% 
+  count(country)
 ```
 
 ```{r}
-
+fisheries %>% 
+  summarize(n_country=n_distinct(country))
 ```
 
 3. Based on the `asfis_species_number`, how many different fish species were caught?
 ```{r}
-
+fisheries %>% 
+  summarize(n_taxa=n_distinct(asfis_species_number))
 ```
 
 4. What is the total catch for each `isscaap_taxonomic_group` in the data set?
 ```{r}
-
+fisheries %>% 
+  group_by(isscaap_taxonomic_group) %>% 
+  summarize(total_catch= sum(catch, na.rm=T)) %>% 
+  arrange(-total_catch)
 ```
 
 5. Based on the `asfis_species_name`, what are the top 5 most caught species? (note: "Osteichthyes" is not a species, it refers to unidentified fish. You should filter this one out.).
 ```{r}
-
+fisheries %>% 
+  filter(asfis_species_name!="Osteichthyes") %>% 
+  group_by(asfis_species_name) %>% 
+  summarize(n_name=sum(catch, na.rm = T)) %>% 
+  arrange(-n_name)
 ```
 
 6. For the species that was caught the most, which country had the highest catch?
@@ -64,6 +81,9 @@ fisheries <- read_csv("data/fisheries.csv")
 
 7. Which country had the largest overall catch between the years 2002-2012?
 ```{r}
+fisheries %>% 
+  filter(between(year, 2002, 2012)) %>% 
+  group_by(country) 
 
 ```
 
