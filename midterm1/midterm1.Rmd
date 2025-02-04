@@ -73,8 +73,8 @@ Problem 4. (2 points) Which habitat has the greatest species diversity?
 ```{r}
 ecosphere %>% 
   group_by(habitat) %>% 
-  summarize(total_r_cbc=sum(range_in_cbc, na.rm = T)) %>% 
-  arrange(-total_r_cbc)
+  summarize(n_species=n_distinct(scientific_name)) %>% 
+  arrange(-n_species)
 ```
 
 
@@ -117,21 +117,46 @@ Problem 9. (4 points). Diet, life expectancy, urban_affiliate, and migratory_str
 ```{r}
 ecosphere %>% 
   filter(diet=="Vertebrates" & life_expectancy=="Long" & urban_affiliate=="No" & migratory_strategy=="Long") %>% 
+  select(common_name, scientific_name, mass_g) %>% 
   arrange(-mass_g)
 ```
 
 
 Problem 10. (4 points). Make a new column `conservation_status` that labels species with a population size less than 300,000 as "threatened" and species with a population size greater than 300,000 as "stable". Make sure your results are sorted in descending order. How many species are threatened vs. stable? Based on the results, do you see a problem with this analysis?  
+
 ```{r}
 ecosphere %>% 
-  mutate(conservation_status=ifelse(population_size<300000, "threatened", "stable")) %>% 
-  arrange(population_size) 
-  #group_by(conservation_status) %>% 
-  #summarize(n_speices=n_distinct(scientific_name))
+  mutate(conservation_status=ifelse(population_size<300000,"threatened", "NA")) %>% 
+  mutate(conservation_status=ifelse(population_size>300000,"stable", conservation_status)) %>% 
+  arrange(-population_size)
 ```
 
+```{r}
+ecosphere %>% 
+  mutate(conservation_status=ifelse(population_size<300000,"threatened", "NA")) %>% 
+  mutate(conservation_status=ifelse(population_size>300000,"stable", conservation_status)) %>% 
+  arrange(-population_size) %>% 
+  group_by(conservation_status) %>% 
+  summarize(n_speices=n_distinct(scientific_name))
+```
+
+```{r}
+ecosphere %>% 
+  mutate(conservation_status=ifelse(population_size<300000,"threatened", "NA")) %>% 
+  mutate(conservation_status=ifelse(population_size>300000,"stable", conservation_status)) %>% 
+  filter(population_size==300000 | is.na(population_size))
+```
 
 Problem 11. (4 points) Use the `ecosphere` data to perform one exploratory analysis of your choice. The analysis must have a minimum of three lines and two functions. You must also clearly state the question you are attempting to answer.
+
+What is the average population size within the woodland habitat, grouped by diet and life_expectancy?
+```{r}
+ecosphere %>% 
+  filter(population_size!="NA" & habitat=="Woodland") %>% 
+  group_by(diet, life_expectancy) %>% 
+  summarize(ave_pop_size=mean(population_size, na.rm=T), .groups="keep") %>% 
+  arrange(-ave_pop_size)
+```
 
 
 ## Submit the Midterm
