@@ -54,19 +54,28 @@ summary(amniota)
 summary(amphibio)
 ```
 
-**4. How many total NA's are in each data set? Do these values make sense? Are NA's represented by values?**   
-there are 0 NAs in amniota but I don't think it makes sense because I know that the NAs are represented as -999 on the data.
+**4. How many total NA's are in each data set? Do these values make sense? Are NA's represented by values?**  
+
+There are 0 NAs in amniota but I don't think it makes sense because when I looked at the histogram of the gestation, it has a high frequency on numbers below 0. From the knowledge I learned from biology, it is impossible to have a gestation period below 0, so the NAs of the amniota data set must be represented by values.
 ```{r}
 amniota %>% 
   miss_var_summary() %>% 
-  arrange(-n_miss)
+  summarize(total_NAs=sum(n_miss))
 ```
 
-The total NAs for each variable is shown in the table, and the data makes sense.
+```{r}
+hist(amniota$gestation_d)
+```
+
+There are a total of 170566 NAs in the amphibio data, and it makes sense if I look at the histogram of the body mass. The histogram shows that all values in the body mass column are above 0.
 ```{r}
 amphibio %>% 
   miss_var_summary() %>% 
-  arrange(-n_miss)
+  summarize(total_Na=sum(n_miss))
+```
+
+```{r}
+hist(amphibio$body_mass_g)
 ```
 
 **5. Make any necessary replacements in the data such that all NA's appear as "NA".**   
@@ -78,27 +87,41 @@ amniota_2
 
 **6. Use the package `naniar` to produce a summary, including percentages, of missing data in each column for the `amniota` data.**  
 ```{r}
-
+amniota_2 %>% 
+  miss_var_summary() %>% 
+  arrange(-n_miss)
 ```
 
 **7. Use the package `naniar` to produce a summary, including percentages, of missing data in each column for the `amphibio` data.**
 ```{r}
-
+amphibio %>% 
+  miss_var_summary()
 ```
 
 **8. For the `amniota` data, calculate the number of NAs in the `egg_mass_g` column sorted by taxonomic class; i.e. how many NA's are present in the `egg_mass_g` column in birds, mammals, and reptiles? Does this results make sense biologically? How do these results affect your interpretation of NA's?**  
-```{r}
 
+Reptiles have 6040 NAs, 
+```{r}
+amniota_2 %>% 
+  select(class, egg_mass_g) %>% 
+  group_by(class) %>% 
+  miss_var_summary() %>% 
+  arrange(-n_miss)
 ```
 
 **9. The `amphibio` data have variables that classify species as fossorial (burrowing), terrestrial, aquatic, or arboreal.Calculate the number of NA's in each of these variables. Do you think that the authors intend us to think that there are NA's in these columns or could they represent something else? Explain.**
 ```{r}
-
+amphibio %>% 
+  select(fos, aqu, ter, arb) %>% 
+  miss_var_summary() %>% 
+  arrange(-n_miss)
 ```
 
 **10. Now that we know how NA's are represented in the `amniota` data, how would you load the data such that the values which represent NA's are automatically converted?**
 ```{r}
-
+amniota_no_NAs <- read_csv("data/amniota.csv", na=c("-999" )) %>% 
+  clean_names()
+amniota_no_NAs
 ```
 
 **11. Please complete the class project survey at: [BIS 15L Group Project](https://forms.gle/H2j69Z3ZtbLH3efW6)**
