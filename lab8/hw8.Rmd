@@ -50,6 +50,7 @@ summary(amniota)
 ```
 
 **3. Do some exploratory analysis of the `amphibio` data set. Use the function(s) of your choice. Try to get an idea of how NA's are represented in the data.**  
+amphibio has NAs as NAs.
 ```{r}
 summary(amphibio)
 ```
@@ -66,6 +67,7 @@ amniota %>%
 ```{r}
 hist(amniota$gestation_d)
 ```
+
 
 There are a total of 170566 NAs in the amphibio data, and it makes sense if I look at the histogram of the body mass. The histogram shows that all values in the body mass column are above 0.
 ```{r}
@@ -95,12 +97,14 @@ amniota_2 %>%
 **7. Use the package `naniar` to produce a summary, including percentages, of missing data in each column for the `amphibio` data.**
 ```{r}
 amphibio %>% 
-  miss_var_summary()
+  miss_var_summary() %>% 
+  arrange(-n_miss)
 ```
 
 **8. For the `amniota` data, calculate the number of NAs in the `egg_mass_g` column sorted by taxonomic class; i.e. how many NA's are present in the `egg_mass_g` column in birds, mammals, and reptiles? Does this results make sense biologically? How do these results affect your interpretation of NA's?**  
 
-Reptiles have 6040 NAs, 
+Reptiles have 6040 NAs and 92% of the reptile class doesn't have a data for egg mass, which I think it doesn't make sense because I thought most reptiles do lay eggs, yet this is still possible if the data didn't include most reptile species that lay eggs.
+Mammals have 4953 NAs and there is no data on their egg mass, and this makes sense because mammals don't lay eggs, so it is impossible to have measurements of egg mass. Birds have 4914 NAs and around half of the species on the data don't have data for their egg mass, which I don't think it makes sense biologically because I thought all bird species are oviparous, meaning they reproduce by laying eggs.
 ```{r}
 amniota_2 %>% 
   select(class, egg_mass_g) %>% 
@@ -110,6 +114,8 @@ amniota_2 %>%
 ```
 
 **9. The `amphibio` data have variables that classify species as fossorial (burrowing), terrestrial, aquatic, or arboreal.Calculate the number of NA's in each of these variables. Do you think that the authors intend us to think that there are NA's in these columns or could they represent something else? Explain.**
+
+When I look at the amphibio data frame, I saw the ones that has data are recorded as "1" or numeric data, so I am guessing that the authors could represent the NAs as "0", but they recorded the ones without data as "NA", which also works.
 ```{r}
 amphibio %>% 
   select(fos, aqu, ter, arb) %>% 
