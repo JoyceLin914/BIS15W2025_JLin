@@ -31,7 +31,7 @@ sharks <- read_csv("data/SharkIncidents_1950_2022_220302.csv") %>% clean_names()
 ## Questions
 1. Start by doing some data exploration using your preferred function(s). What is the structure of the data? Where are the missing values and how are they represented?  
 _long structure_
-_there are 95.7% of missing data on wild life cases, and they were represented as "NA"_
+_there are 95.7% of missing data on wild life cases, longtitude, latitude, and confirmed source, and they were represented as "NA"_
 ```{r}
 sharks
 ```
@@ -83,7 +83,7 @@ sharks %>%
 ```{r}
 sharks %>% 
   count(month) %>%
-  ggplot(aes(x=month, y=n))+
+  ggplot(aes(x=as_factor(month), y=n))+
   geom_col()+
   labs(title = "Number of Incidents vs. Month",
        x="Month",
@@ -98,7 +98,7 @@ __This table shows the total number of incidents by county, and San Diego has th
 ```{r}
 sharks %>% 
   group_by(county, injury) %>% 
-  summarize(num_inju=n(), .groups="drop") %>% 
+  summarize(num_inju=n(), .groups="keep") %>% 
   pivot_wider(names_from = injury, values_from = num_inju) %>% 
   mutate(total_incidents=rowSums(across(where(is.numeric)), na.rm=T)) %>% 
   arrange(-total_incidents)
