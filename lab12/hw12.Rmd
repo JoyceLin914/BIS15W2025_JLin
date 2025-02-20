@@ -36,6 +36,7 @@ For this assignment, we are going to use the dataset [gapminder](https://cran.r-
 ```{r}
 #install.packages("gapminder")
 library("gapminder")
+gapminder
 ```
 
 1. Use the function(s) of your choice to get an idea of the overall structure of the data frame, including its dimensions, column names, variable classes, etc. As part of this, determine how NA's are treated in the data.   
