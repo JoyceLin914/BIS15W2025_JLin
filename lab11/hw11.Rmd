@@ -93,16 +93,15 @@ sharks %>%
 
 5. How do the number and types of injuries compare by county? Make a table that shows the number of injury types by county. Which county has the highest number incidents?
 
-_San Diego has the highest total number of injuries among all the counties_
+_This table shows the number of injury types by county_
 
 ```{r}
 sharks %>% 
   group_by(county) %>% 
-  count(injury) %>% 
-  arrange(-n)
+  count(injury)
 ```
 
-
+__This table shows the total number of incidents by county, and San Diego has the highest total number of injuries among all the counties__
 ```{r}
 sharks %>% 
   group_by(county) %>% 
@@ -115,11 +114,8 @@ sharks %>%
 
 ```{r}
 sharks %>% 
-  group_by(county) %>% 
-  count(injury) %>% 
-  summarize(tot_inj=sum(n)) %>% 
-  ggplot(aes(x=county, y=tot_inj))+
-  geom_col()+
+  ggplot(aes(x=county, fill = injury))+
+  geom_bar()+
   coord_flip()+
   labs(title = "Total Number of Incidents by County",
        x="County",
@@ -142,9 +138,8 @@ sharks %>%
 
 ```{r}
 sharks %>% 
-  count(mode) %>% 
-  ggplot(aes(x=mode, y=n, fill=mode))+
-  geom_col()+
+  ggplot(aes(x=mode, fill=mode))+
+  geom_bar()+
   coord_flip()+
   labs(title = "Number of Incidents vs. Activity",
        x="Activity",
