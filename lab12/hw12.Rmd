@@ -22,10 +22,15 @@ Make sure to use the formatting conventions of RMarkdown to make your report nea
 library(tidyverse)
 library(janitor)
 library(naniar)
+library(gtools)
 ``` 
 
 ```{r}
 options(scipen = 999)
+```
+
+```{r}
+#install.packages("gtools")
 ```
 
 ## Resources
@@ -41,20 +46,136 @@ gapminder
 
 1. Use the function(s) of your choice to get an idea of the overall structure of the data frame, including its dimensions, column names, variable classes, etc. As part of this, determine how NA's are treated in the data.   
 
+_It is a long structure, and it has no NAs in the data_
+```{r}
+summary(gapminder)
+```
+```{r}
+gapminder %>% 
+  summarize(across(everything(), ~ sum(is.na(.))))
+```
+```{r}
+dim(gapminder)
+```
+```{r}
+names(gapminder)
+```
+```{r}
+class(gapminder)
+```
+
+
 2. How many countries are represented in this dataset? Make a table and a plot that shows the number of countries by continent.  
 
+_There are a total of 142 countries, including 52 African countries, 33 Asian countries, 30 European countries, 25 American countries, and 2 Oceanian countries_
+
+```{r}
+gapminder %>% 
+  summarize(dis_con=n_distinct(country)) %>% 
+```
+
+```{r}
+gapminder %>% 
+  group_by(continent) %>% 
+  summarize(n_con=n_distinct(country)) %>% 
+  arrange(-n_con)
+```
+
+
+```{r}
+gapminder %>% 
+  group_by(continent) %>% 
+  summarize(n_con=n_distinct(country)) %>% 
+  ggplot(aes(x=reorder(continent, n_con), y=n_con))+
+  geom_col()+
+  labs(title = "Continent vs Number of Countries",
+       x= "Continent",
+       y= "Number of Countries")+
+  coord_flip()+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))
+```
+
+
 3. Which country has the largest population growth since 1952? Show this as a table.  
+
+_China has the largest population growth since 1952_
+```{r}
+gapminder %>% 
+  filter(year>=1952) %>% 
+  group_by(country) %>% 
+  summarize(min_pop=min(pop), max_pop=max(pop)) %>% 
+  mutate(pop_growth= max_pop-min_pop) %>% 
+  arrange(-pop_growth)
+```
 
 
 4. Make a plot that shows population growth for the country you found in question #3. This plot should show the change over time.  
 
+```{r}
+gapminder %>% 
+  filter(country=="China") %>% 
+  select(country, year, pop) %>% 
+  ggplot(aes(x=year, y=pop))+
+  geom_col()+
+  labs(title = "Population Change Over Tiime in China Between 1952 and 2007",
+       x= "Year",
+       y="Population")+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+
 5. How has global life expectancy changed between 1952 and 2007? Show the min, mean, and max for all countries in the dataset. Show this as a table.  
+
+```{r}
+gapminder %>% 
+  group_by(country) %>% 
+  summarize(min_lif=min(lifeExp), max_lif=max(lifeExp), mean_lif=mean(lifeExp))
+```
+
 
 6. Make a plot that shows how mean life expectancy has changed over time for each continent. What is your interpretation of what happened in Africa between 1987 and 2002?  
 
+_The life expectancy in Africa between 1987 and 2002 barely changed, and I think this is because of the disease outbreak like AIDS, which increases its mortality rate. So, despite having a high birth rate, the high mortality rate keeps the life expectancy rate constant_
+```{r}
+gapminder %>% 
+  group_by(continent, year) %>% 
+  summarize(ave_lifex=mean(lifeExp), .groups = "keep") %>% 
+  ggplot(aes(x=year, y=ave_lifex, group = continent, color= continent))+
+  geom_line()+
+  geom_point(shape=4)+
+  labs(title = "Life Expectancy Over Time in Each Continent",
+       x="Year",
+       y="Mean Life Expectancy")+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+```{r}
+gapminder %>% 
+  filter(continent=="Africa" & year>=1987 & year <= 2002) %>% 
+  group_by(year) %>% 
+  summarize(ave_life=mean(lifeExp))
+```
+
+
 7. We are interested in the relationship between per capita GDP and life expectancy; i.e. does having more money help you live longer? Show this as a plot.  
 
+```{r}
+gapminder %>% 
+  group_by(country) %>% 
+  ggplot(aes(x=gdpPercap, y=lifeExp))+
+  geom_col()
+```
+
+
 8. Which five countries have had the highest GDP per capita growth over the years represented in this dataset? Show this as a table.  
+
+```{r}
+gapminder %>% 
+  group_by(country, year) %>% 
+  summarize(min_gdp=min(gdpPercap), max_gdp=max(gdpPercap), .groups = "keep") %>% 
+  mutate(gdp_growth= max_gdp-min_gdp)
+```
+
 
 9. How does per capita GDP growth compare between these same five countries? Show this as a plot.  
 
