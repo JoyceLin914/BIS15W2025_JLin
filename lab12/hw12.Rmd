@@ -30,7 +30,7 @@ options(scipen = 999)
 ```
 
 ```{r}
-#install.packages("gtools")
+install.packages("gtools")
 ```
 
 ## Resources
@@ -159,25 +159,38 @@ gapminder %>%
 
 7. We are interested in the relationship between per capita GDP and life expectancy; i.e. does having more money help you live longer? Show this as a plot.  
 
+_Not really_
 ```{r}
 gapminder %>% 
   group_by(country) %>% 
   ggplot(aes(x=gdpPercap, y=lifeExp))+
-  geom_col()
+  geom_point()+
+  coord_flip()+
+  labs(title = "Money vs. Life Expectancy", 
+       x="GDP Per Capita",
+       y="Life Expectancy")+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
 
 8. Which five countries have had the highest GDP per capita growth over the years represented in this dataset? Show this as a table.  
 
+_Kuwait, Singapore, Norway, Hong Kong, Ireland_
 ```{r}
 gapminder %>% 
-  group_by(country, year) %>% 
+  group_by(country) %>% 
   summarize(min_gdp=min(gdpPercap), max_gdp=max(gdpPercap), .groups = "keep") %>% 
-  mutate(gdp_growth= max_gdp-min_gdp)
+  mutate(gdp_growth= max_gdp-min_gdp) %>% 
+  arrange(-gdp_growth)
 ```
 
 
 9. How does per capita GDP growth compare between these same five countries? Show this as a plot.  
+
+```{r}
+
+```
+
 
 10. Do one analysis of your choice that includes a table and plot as outputs.  
 
