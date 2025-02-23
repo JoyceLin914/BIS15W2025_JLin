@@ -1,6 +1,6 @@
 ---
 title: "Lab 12 Homework"
-author: "Your Name Here"
+author: "Joyce Lin"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -30,7 +30,7 @@ options(scipen = 999)
 ```
 
 ```{r}
-install.packages("gtools")
+#install.packages("gtools")
 ```
 
 ## Resources
@@ -71,7 +71,7 @@ _There are a total of 142 countries, including 52 African countries, 33 Asian co
 
 ```{r}
 gapminder %>% 
-  summarize(dis_con=n_distinct(country)) %>% 
+  summarize(dis_con=n_distinct(country)) 
 ```
 
 ```{r}
@@ -114,9 +114,9 @@ gapminder %>%
 ```{r}
 gapminder %>% 
   filter(country=="China") %>% 
-  select(country, year, pop) %>% 
   ggplot(aes(x=year, y=pop))+
-  geom_col()+
+  geom_line()+
+  geom_point(shape=9)+
   labs(title = "Population Change Over Tiime in China Between 1952 and 2007",
        x= "Year",
        y="Population")+
@@ -135,20 +135,21 @@ gapminder %>%
 
 6. Make a plot that shows how mean life expectancy has changed over time for each continent. What is your interpretation of what happened in Africa between 1987 and 2002?  
 
-_The life expectancy in Africa between 1987 and 2002 barely changed, and I think this is because of the disease outbreak like AIDS, which increases its mortality rate. So, despite having a high birth rate, the high mortality rate keeps the life expectancy rate constant_
+
 ```{r}
 gapminder %>% 
   group_by(continent, year) %>% 
   summarize(ave_lifex=mean(lifeExp), .groups = "keep") %>% 
   ggplot(aes(x=year, y=ave_lifex, group = continent, color= continent))+
   geom_line()+
-  geom_point(shape=4)+
+  geom_point(shape=7)+
   labs(title = "Life Expectancy Over Time in Each Continent",
        x="Year",
        y="Mean Life Expectancy")+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
+_The life expectancy in Africa between 1987 and 2002 barely changed, and I think this is because of the disease outbreak like AIDS, which increases its mortality rate. So, despite having a high birth rate, the high mortality rate keeps the life expectancy rate constant_
 ```{r}
 gapminder %>% 
   filter(continent=="Africa" & year>=1987 & year <= 2002) %>% 
@@ -159,12 +160,13 @@ gapminder %>%
 
 7. We are interested in the relationship between per capita GDP and life expectancy; i.e. does having more money help you live longer? Show this as a plot.  
 
-_Not really_
+_The line shows that more money helps you live longer, but the data points itself doesn't show strong correlation between GDP and life expectancy_
 ```{r}
 gapminder %>% 
   group_by(country) %>% 
   ggplot(aes(x=gdpPercap, y=lifeExp))+
   geom_point()+
+  geom_smooth(method=lm, se=F)+
   coord_flip()+
   labs(title = "Money vs. Life Expectancy", 
        x="GDP Per Capita",
@@ -188,11 +190,46 @@ gapminder %>%
 9. How does per capita GDP growth compare between these same five countries? Show this as a plot.  
 
 ```{r}
-
+gapminder %>% 
+  filter(country=="Kuwait" | country=="Singapore" | country=="Norway" | country=="Hong Kong, China" | country=="Ireland") %>% 
+  group_by(country) %>% 
+  ggplot(aes(x=year, y=gdpPercap, group = country, color = country))+
+  geom_line()+
+  geom_point(shape=5)+
+  labs(title = "Per Capita GDP growth vs. Year within Kuwait, Singapore, Norway, Hongkong, Ireland",
+       x="Year",
+       y="GDP Per Capita")+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
 
 10. Do one analysis of your choice that includes a table and plot as outputs.  
+
+Make a table and a plot that shows the population change over time in all countries in the Asian continent, and present table with min, max, mean of the population, and the overall population growth, and scale the y axis of the plot to log10 base.
+
+```{r}
+gapminder %>% 
+  filter(continent=="Asia") %>% 
+  group_by(country) %>% 
+  summarize(min_pop=min(pop), max_pop=max(pop), ave_pop=mean(pop)) %>% 
+  mutate(pop_growth=max_pop-min_pop) %>% 
+  arrange(-pop_growth)
+```
+
+
+```{r}
+gapminder %>% 
+  filter(continent=="Asia") %>% 
+  group_by(country) %>% 
+  ggplot(aes(x=year, y=pop, group = country, color = country))+
+  geom_line()+
+  scale_y_log10()+
+  labs(title = "Year vs. Population in the Asia continent",
+       x="Year",
+       y="Population")+
+  geom_point(shape=9)
+```
+
 
 ## Knit and Upload
 Please knit your work as a .pdf or .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean! 
