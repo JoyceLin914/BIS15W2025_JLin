@@ -177,7 +177,7 @@ gapminder %>%
 
 8. Which five countries have had the highest GDP per capita growth over the years represented in this dataset? Show this as a table.  
 
-_Kuwait, Singapore, Norway, Hong Kong, Ireland_
+_Singapore, Norway, Hong Kong, Ireland, Austria_
 ```{r}
 gapminder %>% 
   group_by(country) %>% 
@@ -191,12 +191,12 @@ gapminder %>%
 
 ```{r}
 gapminder %>% 
-  filter(country=="Kuwait" | country=="Singapore" | country=="Norway" | country=="Hong Kong, China" | country=="Ireland") %>% 
+  filter(country=="Singapore" | country=="Norway" | country=="Hong Kong, China" | country=="Ireland" | country=="Austria") %>% 
   group_by(country) %>% 
   ggplot(aes(x=year, y=gdpPercap, group = country, color = country))+
   geom_line()+
   geom_point(shape=5)+
-  labs(title = "Per Capita GDP growth vs. Year within Kuwait, Singapore, Norway, Hongkong, Ireland",
+  labs(title = "Per Capita GDP growth vs. Year within Singapore, Norway, Hongkong, Ireland, Austria",
        x="Year",
        y="GDP Per Capita")+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
