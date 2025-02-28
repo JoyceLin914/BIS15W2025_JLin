@@ -23,11 +23,6 @@ library(shinythemes)
 library(fastmap)
 ``` 
 
-```{r}
-installed_packages <- installed.packages()
-installed_packages[, c("Package", "Version")]
-```
-
 
 
 ## Load the data
@@ -55,7 +50,7 @@ msleep %>%
 ```{r, eval=F, echo=T}
 library(shiny)
 
-ui <- fluidPage(
+ui <- fluidPage(titlePanel("msleep app"),
   radioButtons("x",
                "Select X Variable",
                choices = c("sleep_total", "sleep_rem", "sleep_cycle", "awake"),
@@ -65,7 +60,13 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   session$onSessionEnded(stopApp)
-    
+    output$plot <- renderPlot({
+      
+      ggplot(data=msleep,
+             aes_string(x="vore", fill=input$x))+
+        geom_boxplot()+
+        labs(x=NULL, y=NULL, fill="Fill Variable")
+    })
 }
 
 shinyApp(ui, server)
