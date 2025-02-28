@@ -61,8 +61,8 @@ map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=5)
 ggmap(map1)+
   geom_point(data = grizzly, aes(x=longitude, y=latitude), size=0.9)+
   labs(title="Grizzly Bear location",
-       x="Latitude",
-       y="Longitude")
+       x="Longitude",
+       y="Latitude")
 ```
 
 ## Push your final code to GitHub!
