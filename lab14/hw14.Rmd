@@ -1,6 +1,6 @@
 ---
 title: "Homework 14"
-author: "Key"
+author: "Joyce"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -20,7 +20,15 @@ library(janitor)
 library(shiny)
 library(shinydashboard)
 library(shinythemes)
+library(fastmap)
 ``` 
+
+```{r}
+installed_packages <- installed.packages()
+installed_packages[, c("Package", "Version")]
+```
+
+
 
 ## Load the data
 For this assignment, we will use the built-in mammals sleep dataset. The data are from: V. M. Savage and G. B. West. A quantitative, theoretical framework for understanding mammalian sleep. Proceedings of the National Academy of Sciences, 104 (3):1051-1056, 2007.
@@ -29,18 +37,38 @@ msleep <- msleep
 ```
 
 1. Explore the data set. What are the column names?
+_name, genus, vore, order, conservation, sleep_total, sleep_rem, sleep_cycle, awake, brainwt, bodywt_
 ```{r}
-
+names(msleep)
 ```
 
 2. Make a boxplot of the total sleep time for each type of vore diet. Try using some aesthetics to make the plot look nice, including a fill by vore.
 ```{r}
-
+msleep %>% 
+  ggplot(aes(x=sleep_total, y=vore, fill = vore))+
+  geom_boxplot()+
+  labs(title = "Total Sleep Time for Each Vore Diet",
+       x="Total Sleep Time")
 ```
 
 3. The boxplot is fine, but we can build in reactivity so that every variable related to sleep can be explored. These variables include: sleep_total, sleep_rem, sleep_cycle, and awake. Create a shiny app that allows the user to select the variable of interest and then displays a boxplot by type of vore.
 ```{r, eval=F, echo=T}
+library(shiny)
 
+ui <- fluidPage(
+  radioButtons("x",
+               "Select X Variable",
+               choices = c("sleep_total", "sleep_rem", "sleep_cycle", "awake"),
+               selected = "sleep_total"),
+  plotOutput("plot", width = "500px", height = "400px")
+)
+
+server <- function(input, output, session) {
+  session$onSessionEnded(stopApp)
+    
+}
+
+shinyApp(ui, server)
 ```
 
 4. Make a density plot that shows the distribution of the total sleep time for each type of vore diet. Try using some aesthetics to make the plot look nice, including a fill by vore.
