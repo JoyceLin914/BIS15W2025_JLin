@@ -87,7 +87,7 @@ server <- function(input, output, session) {
     homerange %>% 
       filter(taxon==input$x) %>% 
       ggplot(aes(x=log10.hra))+
-      geom_density(fill="steelblue", color="black", alpha-0.6)
+      geom_density(fill="steelblue", color="black", alpha=0.6)
   })
 }
 
