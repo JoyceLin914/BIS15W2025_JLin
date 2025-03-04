@@ -1,6 +1,6 @@
 ---
 title: "Midterm 2 W25"
-author: "Your Name Here"
+author: "Joyce Lin"
 date: "`r Sys.Date()`"
 output:
   html_document: default
@@ -43,19 +43,96 @@ heart <- read_csv("data/heart.csv")
 ## Questions
 Problem 1. (1 point) Use the function of your choice to provide a data summary.
 
+```{r}
+glimpse(heart)
+```
+
+```{r}
+summary(heart)
+```
+
 Problem 2. (1 point) Let's explore the demographics of participants included in the study. What is the number of males and females? Show this as a table.  
+_87 females and 183 males_
+```{r}
+heart %>% 
+  count(gender) %>% 
+  arrange(-n)
+```
 
 Problem 3. (2 points) What is the average age of participants by gender? Show this as a table.
+_Female has an average age of 55.67816 and male has an average of of 53.84153_
+```{r}
+heart %>% 
+  group_by(gender) %>% 
+  summarize(ave_age=mean(age))
+```
 
 Problem 4. (1 point) Among males and females, how many have/do not have heart disease? Show this as a table, grouped by gender.  
+_There are 100 males that have heart disease and 83 males that have no heart disease. For female participants, there are 20 have heart disease and 67 that have no heart disease._
+```{r}
+heart %>% 
+  group_by(gender) %>% 
+  count(target) %>% 
+  arrange(-n)
+```
 
 Problem 5. (4 points) What is the percentage of males and females with heart disease? Show this as a table, grouped by gender.  
+_37.04% Male with disease, 30.74% male with no disease, 7.41% female with disease, and 24.81% female with no disease_
+```{r}
+heart %>% 
+  group_by(gender) %>% 
+  count(target) %>% 
+  mutate(n_pct=n/270*100) %>% 
+  arrange(-n_pct)
+```
+
 
 Problem 6. (3 points) Make a plot that shows the results of your analysis from problem 5. If you couldn't get the percentages to work, then make a plot that shows the number of participants with and without heart disease by gender.
 
+```{r}
+heart %>% 
+  ggplot(aes(x=target, fill=gender))+
+  geom_bar()+
+  labs(title = "Gender vs. Heart Disease",
+       x="Heart Disease",
+       y=NULL)
+```
+
+
 Problem 7. (3 points) Is there a relationship between age and cholesterol levels? Make a plot that shows this relationship separated by gender (hint: use faceting or make two plots). Be sure to add a line of best fit (linear regression line).
+_Both male and female have a relationship between age and cholesterol levels, the older the person is, the higher the cholesterol levels_
+```{r}
+heart %>% 
+  filter(gender=="male") %>% 
+  ggplot(aes(x=age, y=chol))+
+  geom_point()+
+  geom_smooth(method = lm, se=F)+
+  labs(title = "Male Age vs. Cholesterol Levels",
+       x="Age",
+       y="Cholesterol Levels",
+       alpha=0.6)+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))
+```
+```{r}
+heart %>% 
+  filter(gender=="female") %>% 
+  ggplot(aes(x=age, y=chol))+
+  geom_point()+
+  geom_smooth(method = lm, se=F)+
+  labs(title = "Female Age vs. Cholesterol Levels",
+       x="Age",
+       y="Cholesterol Levels",
+       alpha=0.6)+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))
+```
 
 Problem 8. (3 points) What is the range of resting blood pressure for participants by type of chest pain? Make a plot that shows this information.
+
+```{r}
+heart %>% 
+  
+```
+
 
 Problem 9. (4 points) What is the distribution of maximum heart rate achieved, separated by gender and whether or not the patient has heart disease? Make a plot that shows this information- you must use faceting.
 

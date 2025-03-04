@@ -1,6 +1,6 @@
 ---
 title: "Midterm 2 W25 Cleaning"
-author: "Your Name Here"
+author: "Joyce Lin"
 date: "`r Sys.Date()`"
 output:
   html_document: default
