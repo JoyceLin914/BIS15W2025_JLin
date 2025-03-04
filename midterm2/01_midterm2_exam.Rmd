@@ -40,6 +40,11 @@ Run the following to load the data.
 heart <- read_csv("data/heart.csv")
 ```
 
+```{r}
+colors <- paletteer::palettes_d_names
+my_palette <- paletteer_d("ochRe::mccrea")
+```
+
 ## Questions
 Problem 1. (1 point) Use the function of your choice to provide a data summary.
 
@@ -82,8 +87,8 @@ _37.04% Male with disease, 30.74% male with no disease, 7.41% female with diseas
 heart %>% 
   group_by(gender) %>% 
   count(target) %>% 
-  mutate(n_pct=n/270*100) %>% 
-  arrange(-n_pct)
+  mutate(pct_n=n/270*100) %>% 
+  arrange(-pct_n)
 ```
 
 
@@ -92,10 +97,12 @@ Problem 6. (3 points) Make a plot that shows the results of your analysis from p
 ```{r}
 heart %>% 
   ggplot(aes(x=target, fill=gender))+
-  geom_bar()+
+  geom_bar(position = "dodge")+
   labs(title = "Gender vs. Heart Disease",
        x="Heart Disease",
-       y=NULL)
+       y=NULL)+
+  theme_stata()+
+  scale_fill_manual(values=my_palette)
 ```
 
 
@@ -111,8 +118,10 @@ heart %>%
        x="Age",
        y="Cholesterol Levels",
        alpha=0.6)+
-  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))+
+  theme_stata()
 ```
+
 ```{r}
 heart %>% 
   filter(gender=="female") %>% 
@@ -123,22 +132,77 @@ heart %>%
        x="Age",
        y="Cholesterol Levels",
        alpha=0.6)+
-  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))+
+  theme_stata()
 ```
 
 Problem 8. (3 points) What is the range of resting blood pressure for participants by type of chest pain? Make a plot that shows this information.
-
+_The range is 
 ```{r}
 heart %>% 
-  
+  ggplot(aes(x=trestbps, y=cp, fill=cp))+
+  geom_boxplot()+
+  labs(title = "Resting Blood Pressure by Types of Chest Pain",
+       x="Resting Blood Pressure",
+       y="Types of Chest Pain",
+       alpha=0.6)+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5),
+        legend.position = "bottom")+
+  theme_stata()+
+  scale_fill_manual(values=my_palette)+
+  coord_flip()
 ```
 
 
 Problem 9. (4 points) What is the distribution of maximum heart rate achieved, separated by gender and whether or not the patient has heart disease? Make a plot that shows this information- you must use faceting.
+_Female has a higher peak on both disease and no disease than that of males; but besides the male_disease graphs, all graphs have a peak above 150._
+```{r}
+heart %>% 
+  ggplot(aes(x=thalach))+
+  geom_density(fill= "darkseagreen")+
+  facet_grid(~gender~target)+
+  labs(title = "Distribution of Maximum Heart Rate Achieved",
+       x="Maximum Heart Rate Achieved",
+       alpha=0.6)+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5))+
+  theme_stata()
+```
+
 
 Problem 10. (4 points) What is the range of ST depression (oldpeak) by the number of major vessels colored by fluoroscopy (ca)? Make a plot that shows this relationship. (hint: should ca be a factor or numeric variable?)
 
+_When ca is 0, it has a range of 0~1.7; when ca is 1, it has a range of 0~ 1.73; when ca is 2, its range is 0.75~2.5; when ca is 3, its range is 0.6~2.3 _
+```{r}
+heart %>% 
+  mutate(ca=as.factor(ca)) %>% 
+  ggplot(aes(x=oldpeak, y=ca, group = ca, fill = ca))+
+  geom_boxplot()+
+  labs(title = "Range of ST Depression vs. Number of Major Vessels Colored by Fluoroscopy",
+       x="ST Depression",
+       y="Number of Major Vessels Colored by Fluoroscopy",
+       alpha=0.6)+
+  theme(plot.title = element_text(size=rel(1.5), hjust=0.5),
+        legend.position = "bottom")+
+  theme_stata()+
+  scale_fill_manual(values=my_palette)+
+  coord_flip()
+```
+
+
 Problem 11. (4 points) Is there an age group where we see increased prevalence of heart disease? Make a plot that shows the number of participants with and without heart disease by age group.
+
+_Yes, at around age 57, I can see that the number of people with heart disease surpass the number of people without heart disease for the first time in the data_
+```{r}
+heart %>% 
+  ggplot(aes(x=age, fill=target))+
+  geom_bar(position = "dodge")+
+  labs(title = "Age vs. Heart Disease",
+       x="Age",
+       y=NULL)+
+  theme_stata()+
+  scale_fill_manual(values=my_palette)
+```
+
 
 ## Submit the Midterm
 1. Save your work and knit the .rmd file.  
