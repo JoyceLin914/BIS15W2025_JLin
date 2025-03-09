@@ -1,150 +1,329 @@
 ---
-title: "Bapp"
+title: "Group12_Nematodes"
 output: html_document
-date: "2023-03-02"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+#install.packages("mapdata")
 ```
 
+
 ```{r}
-library(tidyverse)
-library(palmerpenguins)
-library(ggplot2)
+library("tidyverse")
+library("janitor")
+library("naniar")
+library("readxl")
 library(shiny)
 library(shinydashboard)
-library(naniar)
-library(janitor)
-library(readr)
-library(dplyr)
-library(ggmap)
-```
+library(shinythemes)
+library(fastmap)
 
-```{r}
-soil <- read_xlsx("Soil_nematodes_all_data_final_Dryad.xlsx", na=c("NaN")) %>%clean_names()
-```
-
-
-```{r}
-register_stadiamaps("4adb0100-18d5-445d-b453-5dce6fb7dae9", write = FALSE)
-```
-
-```{r}
-soil %>% 
-  select(latitude, longitude) %>% #get the range of the map
-  summary()
-```
-
-```{r}
-lat <- c(33.28, 33.57)
-long <- c(74.32, 74.67)
-bbox <- make_bbox(long, lat, f = 0.03)
-```
-
-
-```{r}
-map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=12)
-ggmap(map1) + 
-  geom_point(data = soil, aes(longitude, latitude), size=0.4) + # data= meaning not using pipes but layers
-  labs(x= "Longitude", y= "Latitude", title="Nematodes location")
-```
-
-
-```{r}
-ui <- fluidPage(imageOutput("picture", height = "600px", width = "100%"),
-                dashboardPage( skin = "black",
- dashboardHeader(disable = TRUE),
-  dashboardSidebar(disable = TRUE),
-  
-  dashboardBody(
-   
-    tags$head(
-      tags$style(HTML(".box{border-radius: 20px; box-shadow: 5px 5px 10px #888888;}"
-                      ))),
-    
-  fluidRow( class="text center",
-  box(width = 2, height = 650,
-      radioButtons("x", "Choose The Site", choices = c("Bakori", "Budhal", "Darhal", "Thanamandi")
-)
-),  #Close box     
-
-box(title = h2("Standard Visual Range Over the Year", align="center"), width = 6, height= 650, align="center",solidHeader = T,
-plotOutput("plot", width = "550px", height = "525px")),
-
-box(title="", width = 4, height = 650,
-imageOutput("image"), style ="text-align: center;"
-),
-) #close fluidrow
-) #close dashboardbody
-) #close dashboard page
-)
-server <- function(input, output, session) {
-  session$onSessionEnded(stopApp)
-  output$plot <- renderPlot({
-  soil %>% 
-  group_by(transect) %>% 
-  #summarize("Mean_Standard_Visual_Range_km"= mean(svr_val, na.rm = T)) %>% 
-  filter(transect==input$x) %>% 
-  ggplot(aes(x=elevation, y=p_h,group=2, color=transect))+
-  geom_line(size=1.5,alpha=0.8)+
-  geom_point(size=5)+
-      theme(axis.title.x = element_text(size = 23, margin = margin(t = 15)))+
-      theme(axis.title.y = element_text(size = 23,  margin = margin(r = 20)))+
-      theme(axis.text = element_text(size = 14))+
-      labs(y = "Average Standard Visual Range (km)")+
-      labs(x = "Year")+
-      scale_color_gradient(low="blue", high="red")+
-      guides(color = FALSE)
-  })
-  output$image <- renderImage({
-    list(src = "map.png", height = "570px", width="450px")
-  }, deleteFile = FALSE)
-  
-  output$picture <- renderImage({
-    list(src= "picture.jpg", height = "90%", width= "100%")
-  }, deleteFile = FALSE)
-    
-  }
-
-shinyApp(ui, server, options = list(launch.browser = TRUE))
-```
-
-
-```{r}
-# Load libraries
-library(shiny)
 library(leaflet)
+library(mapdata)
+```
 
-# Define UI
-ui <- fluidPage(
-  titlePanel("Interactive Map in Shiny"),
+```{r}
+nematodes <- read.csv("data/dataset2.txt", header = TRUE, sep = "", stringsAsFactors = FALSE, fill = TRUE)
+#this way cleans up the data nicely, can clean it up further and combine more data
+```
+
+```{r}
+names(nematodes)
+```
+
+```{r}
+treonis <- read.csv("data/Treonis.csv") %>% clean_names()
+
+```
+
+```{r}
+soil <- read_excel("Soil_nematodes_all_data_final_Dryad.xlsx") %>% clean_names()
+```
+
+
+```{r} 
+treonis_1 <- treonis %>%  #cleaning up the column names 
+  rename_with(~str_replace(.x, "_identified", "")) 
+ 
+```
+
+```{r}
+soil <- soil %>%
+  replace_with_na_all(condition = ~.x == "NaN") %>%
+  mutate(across(ends_with("herbivores"), ~ round(suppressWarnings(as.numeric(.)), 1)))
+
+```
+
+```{r}
+treonis_2 <- treonis_1 %>% 
+  pivot_longer(cols = 14:27, 
+               names_to = "species", 
+               values_to = "count")
+```
+
+```{r}
+treonis_2 <- treonis_2 %>% 
+  replace_with_na_all(condition = ~.x == 9999) 
+
+```
+
+```{r}
+treonis_2 <- treonis_2 %>% 
+  replace_with_na_all(condition = ~.x == "nd") 
+```
+
+```{r}
+treonis_2 <- treonis_2 %>% #pivoted back because there were too many duplicates from the first pivot
+  pivot_wider(names_from = "species", 
+              values_from = "count")
+```
+
+```{r}
+  write.csv(treonis_2, "data/treonis_2.csv", row.names = FALSE)
+```
+
+
+
+```{r}
+names(soil)
+```
+```{r}
+summary(soil)
+miss_var_summary(soil)
+```
+
+
+
+
+
+
+
+### Made some categorical variables for the Soil data for trophic guilds. Feel free to use, change, or delete.
+```{r}
+soil <- soil %>% 
+             mutate(herbivore_level = case_when(herbivores_percent_of_total <= 40 ~ "small",
+                                              herbivores_percent_of_total > 40 & herbivores_percent_of_total <= 60 ~ "medium",
+                                              herbivores_percent_of_total > 60 ~ "large"))
+```
+
+```{r}
+soil <- soil %>% 
+             mutate(fungivores_level = case_when(fungivores_percent_of_total <= 40 ~ "small",
+                                             fungivores_percent_of_total > 40 & fungivores_percent_of_total <= 60 ~ "medium",
+                                              fungivores_percent_of_total > 60 ~ "large"))
+```
+
+```{r}
+soil <- soil %>% 
+             mutate(bacterivores_level = case_when(bacterivores_percent_of_total <= 40 ~ "small",
+                                              bacterivores_percent_of_total > 40 & bacterivores_percent_of_total <= 60 ~ "medium",
+                                              bacterivores_percent_of_total > 60 ~ "large"))
+```
+
+```{r}
+soil <- soil %>% 
+             mutate(predators_level = case_when(predators_percent_of_total <= 40 ~ "small",
+                                              predators_percent_of_total > 40 & predators_percent_of_total <= 60 ~ "medium",
+                                              predators_percent_of_total > 60 ~ "large"))
+```
+
+```{r}
+soil <- soil %>% 
+             mutate(omnivores_level = case_when(omnivores_percent_of_total <= 40 ~ "small",
+                                              omnivores_percent_of_total > 40 & omnivores_percent_of_total <= 60 ~ "medium",
+                                              omnivores_percent_of_total > 60 ~ "large"))
+```
+
+```{r}
+soil <- soil %>% 
+             mutate(elevation_level = case_when(elevation <= 1695.5 ~ "small",
+                                              elevation > 1695.5 & elevation <= 3109 ~ "medium",
+                                              elevation > 3109 ~ "large"))
+```
+
+
+
+### Made a shiny dashboard with the plots I made. We can put everything together on a single dashboard later. I will am still adding titles and adjusting the variables, but this is what I have so far.
+```{r, eval=F, echo=T}
+library(shinydashboard)
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Nematode Soil Dashboard"),
   
-  sidebarLayout(
-    sidebarPanel(
-      helpText("This is an interactive map with a marker on Mount Everest!")
-    ),
-    
-    mainPanel(
-      leafletOutput("map")  # Output area for the map
+  ## Sidebar content
+  dashboardSidebar(
+    sidebarMenu(
+      
+      menuItem("Soil and Climate", 
+               tabName = "dashboard", 
+               icon = icon("dashboard")),
+      
+      menuItem("Elevation and Soil Moisture", 
+               tabName = "widgets", 
+               icon = icon("th")),
+      
+      menuItem("Elevation and Diversity", 
+               tabName = "tables", 
+               icon = icon("th"))
     )
-  )
-)
-
-# Define Server logic
-server <- function(input, output, session) {
+    ),
   
-  output$map <- renderLeaflet({
-    leaflet() %>%
-      addTiles() %>%  # Default OpenStreetMap tiles
-      setView(lng = 86.9250, lat = 27.9881, zoom = 8) %>%  # Zoom in on Mount Everest
-      addMarkers(lng = 86.9250, lat = 27.9881, popup = "Mount Everest 🏔️")
+  ## Body content
+  dashboardBody(
+    
+    tabItems(
+  
+      ## First tab content    
+      tabItem(tabName = "dashboard",
+        fluidRow(
+          box(plotOutput("plot1", height = 250)), 
+              selectInput("x", 
+                "Select X Variable", 
+                choices = c("conductivity", "p_h", "moisture", "temperature"), 
+                selected = "conductivity"),
+    
+    selectInput("y", 
+                "Select Y Variable", 
+                choices = c("temperature_annual_range", "precipitation_of_wettest_month", "precipitation_seasonality", "precipitation_of_driest_month"), 
+                selected = "temperature_annual_range")
+          )
+          ),
+
+      ## Second tab item 
+      tabItem(tabName = "widgets",
+        fluidRow(
+          box(plotOutput("plot2", height = 250)),
+              selectInput("elevation", "Select elevation:", 
+              choices=unique(soil$elevation_level)),
+          )
+          ),
+    
+      ## Third tab item
+      tabItem(tabName = "tables",
+        fluidRow(
+          box(plotOutput("plot3", height = 250)),
+             selectInput("x", 
+                "Select X Variable", 
+                choices = c("elevation_level"),
+                selected = "elevation_level"),
+          
+          selectInput("y", 
+                "Select Y Variable", 
+                choices = c("enrichment_footprint", "composite_footprint"), 
+                selected = "enrichment_footprint"),
+          )
+          )
+          )
+          )
+          )
+        
+          
+server <- function(input, output, session) {
+
+  output$plot1 <- renderPlot({
+
+    ggplot(data=soil, 
+           aes_string(x=input$x, y=input$y, color="transect"))+
+      geom_point(na.rm=T)+
+      theme_light(base_size=14)+
+      geom_smooth(method="lm", se=F)
   })
+  
+    output$plot2 <- renderPlot({
+    
+    soil %>% 
+    filter(elevation_level==input$elevation) %>%
+    ggplot(aes(x=moisture)) + 
+    geom_density(color="black", fill="steelblue", alpha=0.6)
+    
+  })
+    
+
+    output$plot3 <- renderPlot({
+
+ ggplot(data=soil, 
+           aes_string(x=input$x, y=input$y, color="transect"))+
+      geom_boxplot(na.rm=T)+
+      theme_light(base_size=14)
+      
+    })
 }
 
-# Run the Shiny App
 shinyApp(ui, server)
 ```
 
 
+
+
+
+```{r}
+library(shinydashboard)
+ui <- dashboardPage(
+  dashboardHeader(title = "Nematode Soil Dashboard"),
+  
+  ## Sidebar content
+  dashboardSidebar(
+    sidebarMenu(
+      
+      menuItem("Elevation and Diversity", 
+               tabName = "add_graph", 
+               icon = icon("th")),
+      
+      menuItem("Elevation level and Species",
+               tabName = "species",
+               icon = icon("th"))
+    )
+    ),
+  dashboardBody(tabItems(
+     tabItem(tabName = "add_graph",
+        fluidRow(
+          box(plotOutput("plot4", height = 250)),
+            
+          
+          selectInput("y", 
+                "Select Y Variable", 
+                choices = c("enrichment_footprint", "composite_footprint", "sigma_maturity_index"), 
+                selected = "enrichment_footprint"),
+            )),
+     tabItem(tabName = "species",
+             fluidRow(
+               box(plotOutput("plot5", height=400, width = 400)),
+          
+          selectInput("x",
+                      "Select X Variable",
+                      choices = c("conductivity", "p_h", "moisture", "temperature","isothermality"),
+                      selected = "conductivity"),
+          
+          selectInput("y",
+                      "Select Y Variable",
+                      choices = c("herbivores_percent_of_total", 
+                                  "fungivores_percent_of_total",
+                                  "bacterivores_percent_of_total",
+                                  "predators_percent_of_total",
+                                  "omnivores_percent_of_total"),
+                      selected = "herbivores_percent_of_total"),
+             ))
+     # this is where the output will go
+)))
+
+server <- function(input, output) { 
+      output$plot4 <- renderPlot({
+
+ ggplot(data=soil, 
+           aes_string(x="elevation_level", y=input$y, color="transect"))+
+      geom_boxplot(na.rm=T)+
+      theme_light(base_size=14)})
+      
+      output$plot5 <- renderPlot({
+ ggplot(data = soil,
+        aes_string(x=input$x, y=input$y, color="transect"))+
+          geom_point(na.rm=T)+
+          theme_light(base_size = 14)+
+          geom_smooth(method=lm, se=T, color="black")
+      })
+}
+
+shinyApp(ui, server)
+```
+```
 
