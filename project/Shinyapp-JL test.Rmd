@@ -325,5 +325,160 @@ server <- function(input, output) {
 
 shinyApp(ui, server)
 ```
+
+```{r}
+#install.packages("interp")
 ```
+
+
+
+```{r}
+library(ggplot2)
+library(sf)
+library(terra)
+library(ggspatial)
+library(ggnewscale)
+library(ggtext)
+library(readxl)
+library(elevatr)
+library(ggmap)
+library(leaflet)
+library(viridis)
+library(interp)
+```
+
+
+```{r}
+
+# Load dataset from Excel
+file_path <- "Soil_nematodes_all_data_final_Dryad.xlsx"
+df <- read_excel(file_path, sheet = "data_matrix")
+
+# Convert to spatial format
+df_sf <- st_as_sf(df, coords = c("Longitude", "Latitude"), crs = 4326)
+
+x_limits <- c(74.2, 74.7)  # Longitude range
+y_limits <- c(33.3, 33.7)  # Latitude range
+
+# Fetch elevation data from AWS
+elev_data <- get_elev_raster(df_sf, z = 10, src = "aws") 
+
+elev_rast <- rast(elev_data)
+crs(elev_rast) <- "EPSG:4326"  # Define CRS for elevation raster
+
+# Crop and mask DEM to study area
+elev_crop <- crop(elev_rast, ext(df_sf))
+elev_masked <- mask(elev_crop, df_sf)
+
+# Convert elevation raster to a dataframe for ggplot
+elev_df <- as.data.frame(elev_masked, xy = TRUE)
+colnames(elev_df) <- c("Longitude", "Latitude", "Elevation")
+
+# Ensure sample locations also have CRS defined
+st_crs(df_sf) <- 4326
+
+# Generate Elevation Gradient Map
+ggplot() +
+  # Add the elevation raster as a gradient background
+  geom_tile(data = elev_df, aes(x = Longitude, y = Latitude, fill = Elevation)) +
+  scale_fill_viridis_c(name = "Elevation (m)", option = "plasma") +  # Adjust color gradient
+  
+  # Overlay sample locations (colored by Transect)
+  geom_point(data = df, aes(x = Longitude, y = Latitude, color = Transect), size = 4) +
+  scale_color_manual(values = c("red", "green", "blue", "purple")) +
+
+  # Add labels for key locations (like Budhal)
+  geom_text(data = df[df$Site == "Budhal",], aes(x = Longitude, y = Latitude, label = "Budhal"), 
+            size = 5, color = "black", fontface = "bold", hjust = 1.2) +
+  geom_point(data = df[df$Site == "Budhal",], aes(x = Longitude, y = Latitude), 
+             color = "black", size = 3) +
+
+  # Scale bar and North arrow
+  annotation_scale(location = "br", width_hint = 0.2) +
+  annotation_north_arrow(location = "tl", which_north = "true") +
+
+  # Set correct coordinate reference system
+  coord_sf(xlim = x_limits, ylim = y_limits, crs = 4326) +  # Ensures the proper projection
+  
+  # Theme settings
+  theme_minimal() +
+  labs(title = "Elevation Gradient with Sample Locations",
+       x = "Longitude", y = "Latitude")
+
+```
+
+
+
+
+
+```{r}
+
+# Register Google Maps API (Replace 'your_api_key' with your own key)
+register_stadiamaps("bb553146-07e6-4634-b86c-af8ff1ad50f9", write = FALSE)
+
+# Get the bounding box for the data points
+lat <- range(soil$latitude)
+lon <- range(soil$longitude)
+bbox <- make_bbox(lon, lat, f = 0.03)
+
+```
+
+```{r}
+# Download the terrain basemap
+map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=12)
+
+```
+
+
+```{r}
+
+# Transect locations
+data <- data.frame(
+  Transect = c("Bakori", "Budhal", "Darhal", "Thanamandi"),
+  Latitude = c(33.393844, 33.377822, 33.483548, 33.536140),
+  Longitude = c(74.504130, 74.615964, 74.419256, 74.406322)
+)
+
+# Create map
+ggmap(map1)+
+  geom_point(data = data, aes(x=Longitude, y=Latitude, color=Transect), size=5) + # data= meaning not using pipes but layers
+  labs(x= "Longitude", y= "Latitude", title="Transects on map")
+```
+
+```{r}
+ggsave("Transect_Map.png", width = 10, height = 7, dpi = 300)
+```
+
+
+
+```{r}
+# Convert basemap to raster format
+map_raster <- as.raster(map1)
+
+# Interpolate elevation for a smooth gradient
+# Create a complete grid covering the bounding box
+grid_x <- seq(min(lon), max(lon), length.out = 100)
+grid_y <- seq(min(lat), max(lat), length.out = 100)
+interp_elev <- interp(x = soil$longitude, y = soil$latitude, z = soil$elevation, 
+                       xo = grid_x, yo = grid_y, duplicate = "mean", linear = TRUE)
+
+# Convert to dataframe
+elev_df <- expand.grid(Longitude = interp_elev$x, Latitude = interp_elev$y)
+elev_df$elevation <- as.vector(interp_elev$z)
+
+# ----  Corrected Elevation Gradient Map ---- #
+ggplot() +
+  annotation_raster(map_raster, xmin = min(lon), xmax = max(lon), 
+                    ymin = min(lat), ymax = max(lat)) +  # Add basemap
+  geom_raster(data = elev_df, aes(x = Longitude, y = Latitude, fill = elevation), alpha = 0.6) +  # Full elevation overlay
+  scale_fill_gradient(low = "orange", high = "darkgreen", name = "Elevation (m)") +
+  geom_point(data = soil, aes(x = longitude, y = latitude, color = transect), size = 4, alpha = 0.9) +  # Sample sites
+  labs(title = "Elevation Gradient Map with Sample Sites", 
+       x = "Longitude", y = "Latitude", color = "Transect Site") +
+  coord_cartesian(xlim = lon_range, ylim = lat_range) +  # Ensure full coverage
+  theme_minimal()
+```
+
+
+
 
